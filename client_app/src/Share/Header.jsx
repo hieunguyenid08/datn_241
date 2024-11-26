@@ -15,7 +15,7 @@ import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { isMobile } from 'react-device-detect';
 import './styles.css';
 import SaleAPI from '../API/SaleAPI';
-
+import axios from "axios";
 
 function Header(props) {
     // State count of cart
@@ -192,6 +192,47 @@ function Header(props) {
         localStorage.setItem('history', history.location.pathname)
         history.push('/signin');
     }
+    const [file, setFile] = useState(null);
+    const [predictions, setPredictions] = useState(null);
+    const [products1, setProducts1] = useState(null);  // Thay đổi biến từ products thành products1
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleFileChange = (event) => {
+        setFile(event.target.files[0]);
+    };
+
+    const handleUpload = async () => {
+        if (!file) {
+            alert('Please select an image');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Gửi yêu cầu đến backend Flask API
+            const response = await axios.post('http://localhost:5000/upload-image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            // Nhận kết quả từ API và cập nhật state
+            const { predictions, products } = response.data;
+            setPredictions(predictions);
+            setProducts1(products);  // Sử dụng products1 thay cho products
+            setLoading(false);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            setError('An error occurred while uploading the image');
+            setLoading(false);
+        }
+    };
     return (
         <header>
             <div className="header-middle pl-sm-0 pr-sm-0 pl-xs-0 pr-xs-0 ">
@@ -208,10 +249,12 @@ function Header(props) {
                             <form action="/search" className="hm-searchbox" style={{ width: "50px" }} onSubmit={handler_search}>
                                 <input type="text" placeholder="Tìm kiếm ..." value={keyword_search} onChange={(e) => { set_keyword_search(e.target.value); setSearchVisible(true) }} />
                                 <button className="li-btn" type="submit"><i className="fa fa-search"></i></button>
+                            
                                 {isSearchVisible &&
                                     keyword_search && <div className="show_search_product" ref={searchRef}>
                                         {
                                             search_header && search_header.map(value => (
+                                                <>
                                                 <Link to={`/detail/${value._id}`} onClick={() => setSearchVisible(false)} style={{ padding: '.8rem' }}>
                                                     <div className="hover_box_search d-flex" key={value._id}>
                                                         <img className="img_list_search" src={value.image} alt="" />
@@ -243,11 +286,20 @@ function Header(props) {
                                                     </div>
 
                                                 </Link>
+                                              
+                                                </>
                                             ))
                                         }
                                     </div>
                                 }
                             </form>
+                            <div  className="hm-searchbox1"  onSubmit={handler_search}>
+                             
+                            <Link to={`/imgSearch`}  ><button className="li-btn" type="submit"><i className="fa fa-camera"></i></button>/</Link>
+                            
+                               
+                            </div>
+                           
                             <div className="ml-15 header-middle-right d-flex justify-content-between align-items-center" onClick={toggleCartVisibility}>
                                 <ul className="hm-menu d-flex justify-content-between align-items-center">
                                     <li className="hm-wishlist d-flex justify-content-between align-items-center">
@@ -299,6 +351,7 @@ function Header(props) {
                         </div>}
                     </div>
                 </div>
+                
                 <div className={header_navbar}>
                     <div className="container">
                         <div className="row">

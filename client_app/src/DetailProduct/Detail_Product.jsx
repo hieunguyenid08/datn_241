@@ -162,6 +162,7 @@ function Detail_Product() {
                         <ul>
                             <li><Link to="/">Trang chủ</Link></li>
                             <li className="active">{product.name_product}</li>
+                            
                         </ul>
                     </div>
                 </div>
@@ -184,6 +185,7 @@ function Detail_Product() {
                             <div className="product-details-view-content pt-60">
                                 <div className="product-info">
                                     <h2>{product.name_product}</h2>
+                                    <li className="active">{product.depository}</li>
                                     <div className="price-box pt-20">
                                         {
                                             sale ? (<del className="new-price new-price-2" style={{ color: '#525252' }}>{new Intl.NumberFormat('vi-VN', { style: 'decimal', decimal: 'VND' }).format(product.price_product) + ' VNĐ'}</del>) :
@@ -200,6 +202,7 @@ function Detail_Product() {
                                     <div className="product-desc">
                                         {product.describe}
                                     </div>
+                                    
                                     <div className="single-add-to-cart">
                                         <form action="#" className="cart-quantity">
                                             <div className="quantity">

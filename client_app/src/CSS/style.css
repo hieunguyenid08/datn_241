@@ -1419,6 +1419,13 @@ textarea:focus {
 	min-width: 550px;
 	height: 45px;
 }
+.hm-searchbox1 {
+	display: flex;
+	position: relative;
+	
+	min-width: 0px;
+	height: 43px;
+}
 .hm-searchbox .nice-select.select-search-category {
 	width: auto;
 	line-height: 43px;
