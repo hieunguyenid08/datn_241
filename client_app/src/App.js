@@ -29,6 +29,7 @@ import OrderFail from "./Order/OrderFail";
 // import Search from "./Search/Search";
 import { lazy, Suspense } from "react";
 import OrderMomo from "./Order/OrderMomo";
+import Imgsearch from "./Imgsearch/Imgsearch";
 // import DetailEvent from "./About/DetailEvent";
 
 const Home = lazy(() => {
@@ -146,7 +147,7 @@ function App() {
             <Route exact path="/event" component={Event} />
             <Route path="/event/:id" component={DetailEvent} />
 
-
+            <Route path="/imgSearch" component={Imgsearch} />
             <Route path="/contact" component={Contact} />
             <Route path="/signin" component={SignIn} />
             <Route path="/signup" component={SignUp} />

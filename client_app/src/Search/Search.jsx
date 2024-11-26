@@ -5,7 +5,7 @@ import queryString from 'query-string'
 import Product from '../API/Product';
 import './Search.css'
 import { Link } from 'react-router-dom';
-
+import axios from "axios";
 Search.propTypes = {
 
 };
@@ -46,7 +46,47 @@ function Search(props) {
         }, 2500)
 
     }, [page])
+    const [file, setFile] = useState(null);
+    const [predictions, setPredictions] = useState(null);
+    const [products1, setProducts1] = useState(null);  // Thay đổi biến từ products thành products1
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
+    const handleFileChange = (event) => {
+        setFile(event.target.files[0]);
+    };
+
+    const handleUpload = async () => {
+        if (!file) {
+            alert('Please select an image');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Gửi yêu cầu đến backend Flask API
+            const response = await axios.post('http://localhost:5000/upload-image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            // Nhận kết quả từ API và cập nhật state
+            const { predictions, products } = response.data;
+            setPredictions(predictions);
+            setProducts1(products);  // Sử dụng products1 thay cho products
+            setLoading(false);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            setError('An error occurred while uploading the image');
+            setLoading(false);
+        }
+    };
 
     return (
 
@@ -54,18 +94,7 @@ function Search(props) {
             <div className="container">
                 <div className="row">
                     <div className="col-lg-12">
-                        <div className="shop-top-bar">
-                            <div className="product-select-box">
-                                <div className="product-short">
-                                    <p>Sort By:</p>
-                                    <select className="nice-select">
-                                        <option value="trending">Relevance</option>
-                                        <option value="rating">Price (Low &gt; High)</option>
-                                        <option value="rating">Price (High &gt; Low)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                       
                         <div className="shop-products-wrapper">
                             <div className="row">
                                 <div className="col">
@@ -114,13 +143,7 @@ function Search(props) {
                                                         </div>
                                                     </div>
                                                     <div className="col-lg-4">
-                                                        <div className="shop-add-action mb-xs-30">
-                                                            <ul className="add-actions-link">
-                                                                <li className="add-cart"><a href="#">Add to cart</a></li>
-                                                                <li className="wishlist"><a href="wishlist.html"><i className="fa fa-heart-o" />Add to wishlist</a></li>
-                                                                <li><a className="quick-view" data-toggle="modal" data-target={`#${value._id}`} href="#"><i className="fa fa-eye" />Quick view</a></li>
-                                                            </ul>
-                                                        </div>
+
                                                     </div>
                                                 </div>
                                             ))
@@ -131,74 +154,6 @@ function Search(props) {
                         </div>
                     </div>
                 </div>
-
-                {
-                    products && products.map(value => (
-                        <div className="modal fade modal-wrapper" key={value._id} id={value._id} >
-                            <div className="modal-dialog modal-dialog-centered" role="document">
-                                <div className="modal-content">
-                                    <div className="modal-body">
-                                        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                        <div className="modal-inner-area row">
-                                            <div className="col-lg-5 col-md-6 col-sm-6">
-                                                <div className="product-details-left">
-                                                    <div className="product-details-images slider-navigation-1">
-                                                        <div className="lg-image">
-                                                            <img src={value.image} alt="product image" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="col-lg-7 col-md-6 col-sm-6">
-                                                <div className="product-details-view-content pt-60">
-                                                    <div className="product-info">
-                                                        <h2>{value.name_product}</h2>
-                                                        <div className="rating-box pt-20">
-                                                            <ul className="rating rating-with-review-item">
-                                                                <li><i className="fa fa-star-o"></i></li>
-                                                                <li><i className="fa fa-star-o"></i></li>
-                                                                <li><i className="fa fa-star-o"></i></li>
-                                                                <li><i className="fa fa-star-o"></i></li>
-                                                                <li className="no-star"><i className="fa fa-star-o"></i></li>
-                                                            </ul>
-                                                        </div>
-                                                        <div className="price-box pt-20">
-                                                            <span className="new-price new-price-2">${value.price_product}</span>
-                                                        </div>
-                                                        <div className="product-desc">
-                                                            <p>
-                                                                <span>
-                                                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis reiciendis hic voluptatibus aperiam culpa ullam dolor esse error ducimus itaque ipsa facilis saepe rem veniam exercitationem quos magnam, odit perspiciatis.
-                                                        </span>
-                                                            </p>
-                                                        </div>
-                                                        <div className="single-add-to-cart">
-                                                            <form action="#" className="cart-quantity">
-                                                                <div className="quantity">
-                                                                    <label>Quantity</label>
-                                                                    <div className="cart-plus-minus">
-                                                                        <input className="cart-plus-minus-box" value="1" type="text" />
-                                                                        <div className="dec qtybutton"><i className="fa fa-angle-down"></i></div>
-                                                                        <div className="inc qtybutton"><i className="fa fa-angle-up"></i></div>
-                                                                    </div>
-                                                                </div>
-                                                                <button className="add-to-cart" type="submit">Add to cart</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                }
-
             </div>
         </div>
     )
