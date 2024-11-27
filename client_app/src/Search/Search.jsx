@@ -104,7 +104,7 @@ function Search(props) {
                                         next={() => set_page(page + 1)}
                                         hasMore={true}
                                         loader={show_load ? <div className="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-                                            : <h4 className="text-center" style={{ paddingTop: '3rem', color: '#FED700' }}>Yay! You have seen it all</h4>}
+                                            : <h4 className="text-center" style={{ paddingTop: '3rem', color: '#FED700' }}>Sản phẩm đã hiện lên tất cả!</h4>}
                                     >
                                         {
                                             products && products.map(value => (

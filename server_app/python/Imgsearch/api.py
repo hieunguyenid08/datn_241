@@ -79,7 +79,7 @@ def predict_image(file_path):
         result = {}
         # In các nhãn có xác suất lớn hơn 20%
         for label, prob in zip(all_labels, predictions[0]):
-            if prob * 100 > 20:  # Chỉ in khi xác suất lớn hơn 20%
+            if prob * 100 > 5:  # Chỉ in khi xác suất lớn hơn 10%
                 result[label] = float(prob * 100)  # Chuyển đổi sang float chuẩn
                 print(f"{label}: {prob * 100:.2f}%")  # In ra nhãn và xác suất
 
