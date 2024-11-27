@@ -125,7 +125,7 @@ function Imgsearch(props) {
 
                                     <div className="upload-container">
                                         <h2>Chọn hỉnh ảnh để tìm kiếm</h2>
-                                            
+
                                         <input className="w-100= p-2" type="file" onChange={handleFileChange} />
                                         <button
                                             className="upload-button"
@@ -148,26 +148,11 @@ function Imgsearch(props) {
                                             <h3 className="sanpham">Sản phẩm mà bạn muốn tìm kiếm</h3>
                                             <div className="shop-products-wrapper">
                                                 <div className="row">
-                                                    
+
                                                     <div className="col">
-                                                        <InfiniteScroll
-                                                            style={{ overflow: 'none' }}
-                                                            dataLength={products1.length}
-                                                            
-                                                            next={() => set_page(page + 1)}
-                                                            hasMore={true}
-                                                            loader={show_load ? (
-                                                                <div className="lds-roller">
-                                                                    <div></div><div></div><div></div><div></div>
-                                                                    <div></div><div></div><div></div><div></div>
-                                                                </div>
-                                                            ) : (
-                                                                <h4 className="text-center" style={{ paddingTop: '3rem', color: '#FED700' }}>
-                                                                    Sản phẩm đã hiện lên tất cả!
-                                                                </h4>
-                                                            )}
-                                                        >
-                                                            {products1 && products1.map(value => (
+
+                                                        {products1 && products1.length > 0 ? (
+                                                            products1 && products1.map(value => (
                                                                 <Link to={`/detail/${value._id}`} key={value._id}>
                                                                     <div className="row product-layout-list">
                                                                         <div className="product-image">
@@ -220,7 +205,7 @@ function Imgsearch(props) {
                                                                                     </div>
                                                                                     <p>
                                                                                         {value.describe}
-                                                                                        
+
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
@@ -230,8 +215,13 @@ function Imgsearch(props) {
                                                                         </div>
                                                                     </div>
                                                                 </Link>
-                                                            ))}
-                                                        </InfiniteScroll>
+                                                            ))
+                                                        ) : (
+                                                            <div className="upload-container1">
+                                                                <p>Không có sản phẩm nào được tìm thấy.</p>
+                                                            </div>
+                                                        )}
+
                                                     </div>
                                                 </div>
                                             </div>
