@@ -15,6 +15,7 @@ import MoMo from './MoMo.jsx'
 import LogoMomo from './momo-png/momo_icon_square_pinkbg_RGB.png'
 import Modal_Image from '../Modal';
 import Button from 'react-bootstrap/Button';
+import axios from 'axios';
 
 const socket = io('https://dacn-231-t581.onrender.com', {
     transports: ['websocket'], jsonp: false
@@ -57,6 +58,29 @@ function Checkout() {
     }, [check_action])
 
     // Hàm này dùng để tính tổng tiền
+    const [productId, setProductId] = useState('');
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmitt = async (id) => {
+        //e.preventDefault();
+        setLoading(true);
+        setMessage(''); // Reset message before the request
+
+        try {
+            // Gửi request đến API cập nhật kho
+            const response = await axios.patch('http://localhost:8000/api/admin/product/updateDepository', {
+                _id: id,
+            });
+            console.log(response);
+
+            setMessage(response.data.msg); // Set message to show success
+        } catch (error) {
+            setMessage(error.response?.data?.msg || 'Có lỗi xảy ra'); // Show error message if any
+        } finally {
+            setLoading(false);
+        }
+    };
     function Sum_Price(carts, sum_price) {
 
         carts.map(value => {
@@ -169,9 +193,8 @@ function Checkout() {
     const dispatch = useDispatch()
 
     // Hàm này dùng để thanh toán offline
-    const handler_Checkout = async (data) => {
+    const handler_Checkout = async (data) => {     
         
-
         // set_load_order(true)
 
         if (localStorage.getItem("id_coupon")) {
@@ -222,9 +245,8 @@ function Checkout() {
                 count: data_carts[i].count,
                 size: data_carts[i].size
             }
-
             await Detail_OrderAPI.post_detail_order(data_detail_order)
-
+            await handleSubmitt(data_carts[i].id_product);
         }
 
         // data email
@@ -526,8 +548,8 @@ function Checkout() {
                                                         {
                                                             redirect && <Redirect to="/success" />
                                                         }
-                                                        <input value="Tiền mặt" type="submit" />
-                                                    </div>
+                                                        <input value="Tiền mặt" type="submit" />                                                       
+                                                    </div>                                                   
                                                 </div>
                                             </div>
                                         </div>

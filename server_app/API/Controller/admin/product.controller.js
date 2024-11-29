@@ -1,4 +1,5 @@
 const Product = require('../../../Models/product')
+const Detail_Order = require('../../../Models/detail_order')
 
 module.exports.index = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
@@ -137,11 +138,40 @@ module.exports.update = async (req, res) => {
 
 
 module.exports.updateDepository = async (req, res) => {
-        req.body.depository -=1; 
-        await Product.updateOne({ _id: req.body._id }, {
-            depository:req.body.depository,
-        }, function (err, res) {
-            if (err) return res.json({ msg: err });
-        });  
-        res.json({ msg: "Bạn đã update thành công" })
+    try {
+        // Bước 1: Lấy tất cả dữ liệu từ collection `Detail_Order` dựa trên `id_product`
+        const detailOrders = await Detail_Order.find({ id_product: req.body._id });
+
+        if (!detailOrders || detailOrders.length === 0) {
+            return res.status(404).json({ msg: "Không tìm thấy chi tiết đơn hàng cho sản phẩm này" });
         }
+
+        // Bước 2: Duyệt qua tất cả các đơn hàng từ cuối đến đầu để tính tổng `count` cần trừ
+        let totalCountToSubtract = 0;
+
+        // Duyệt ngược mảng với vòng lặp for
+            totalCountToSubtract += detailOrders[detailOrders.length-1].count;
+
+        console.log("Tổng số lượng cần trừ: ", totalCountToSubtract);
+
+        // Bước 3: Lấy sản phẩm từ collection `Product` dựa trên `id_product`
+        const product = await Product.findOne({ _id: req.body._id });
+
+        if (!product) {
+            return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
+        }
+
+        // Tính toán giá trị `depository` mới
+        const newDepository = product.depository - totalCountToSubtract;
+
+        // Bước 4: Cập nhật lại `depository` của sản phẩm
+        await Product.updateOne({ _id: req.body._id }, { depository: newDepository });
+
+        res.json({ msg: "Đã cập nhật thành công số lượng trong kho" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Có lỗi xảy ra khi cập nhật số lượng kho", error: error.message });
+    }
+};
+
+
