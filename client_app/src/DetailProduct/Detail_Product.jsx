@@ -162,7 +162,7 @@ function Detail_Product() {
                         <ul>
                             <li><Link to="/">Trang chủ</Link></li>
                             <li className="active">{product.name_product}</li>
-                            
+
                         </ul>
                     </div>
                 </div>
@@ -185,7 +185,20 @@ function Detail_Product() {
                             <div className="product-details-view-content pt-60">
                                 <div className="product-info">
                                     <h2>{product.name_product}</h2>
-                                    <li className="active">{product.depository}</li>
+                                    <div style={{ display: 'inline-block' }}>
+                                        {product.depository === 0 ? (
+                                            <span style={{ color: 'red' }}>Hết hàng</span>
+                                        ) : (
+                                            <>
+                                                <label style={{ display: 'inline-block', marginRight: '10px' }}>Kho:</label>
+                                                <div className="active" style={{ display: 'inline-block' }}>
+                                                    {product.depository}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+
                                     <div className="price-box pt-20">
                                         {
                                             sale ? (<del className="new-price new-price-2" style={{ color: '#525252' }}>{new Intl.NumberFormat('vi-VN', { style: 'decimal', decimal: 'VND' }).format(product.price_product) + ' VNĐ'}</del>) :
@@ -202,18 +215,38 @@ function Detail_Product() {
                                     <div className="product-desc">
                                         {product.describe}
                                     </div>
-                                    
+
                                     <div className="single-add-to-cart">
                                         <form action="#" className="cart-quantity">
-                                            <div className="quantity">
-                                                <label>Số lượng:</label>
-                                                <div className="cart-plus-minus">
-                                                    <input className="cart-plus-minus-box" value={count} type="text" onChange={(e) => set_count(e.target.value)} />
-                                                    <div className="dec qtybutton" onClick={downCount}><i className="fa fa-angle-down"></i></div>
-                                                    <div className="inc qtybutton" onClick={upCount}><i className="fa fa-angle-up"></i></div>
-                                                </div>
-                                            </div>
-                                            <a href="#" className="add-to-cart" type="submit" onClick={handler_addcart}>Thêm vào giỏ hàng</a>
+                                            {product.depository !== 0 && (
+                                                <>
+                                                    <div className="quantity">
+                                                        <label>Số lượng:</label>
+                                                        <div className="cart-plus-minus">
+                                                            <input
+                                                                className="cart-plus-minus-box"
+                                                                value={count}
+                                                                type="text"
+                                                                onChange={(e) => set_count(e.target.value)}
+                                                            />
+                                                            <div className="dec qtybutton" onClick={downCount}>
+                                                                <i className="fa fa-angle-down"></i>
+                                                            </div>
+                                                            <div className="inc qtybutton" onClick={upCount}>
+                                                                <i className="fa fa-angle-up"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <a
+                                                        href="#"
+                                                        className="add-to-cart"
+                                                        type="submit"
+                                                        onClick={handler_addcart}
+                                                    >
+                                                        Thêm vào giỏ hàng
+                                                    </a>
+                                                </>
+                                            )}
                                         </form>
                                     </div>
                                 </div>
@@ -230,8 +263,8 @@ function Detail_Product() {
                                 <ul className="nav li-product-menu">
                                     <li><a className="active" data-toggle="tab" href="#description"><span>Mô tả</span></a></li>
                                     <li><a data-toggle="tab" href="#reviews"><span>Đánh giá</span></a></li>
-                                    
-                                    
+
+
                                 </ul>
                             </div>
                         </div>
