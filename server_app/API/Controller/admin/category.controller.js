@@ -33,100 +33,156 @@ module.exports.index = async (req, res) => {
     }
 }
 
-module.exports.create = async (req, res) => {
-    const category = await Category.find();
+module.exports.create = async (req, res, next) => {
+    try {
+        const { name } = req.query;
 
-    const categoryFilter = category.filter((c) => {
-        return c.category.toUpperCase() === req.query.name.toUpperCase().trim()
-    });
+        // Kiểm tra nếu `name` không tồn tại hoặc rỗng
+        if (!name || name.trim() === "") {
+            return res.status(400).json({ success: false, message: "Tên loại không được để trống." });
+        }
 
-    if (categoryFilter.length > 0) {
-        res.json({ msg: 'Loại đã tồn tại' })
-    } else {
-        var newcategory = new Category()
-        req.query.name = req.query.name.toLowerCase().replace(/^.|\s\S/g, a => { return a.toUpperCase() })
-        newcategory.category = req.query.name
+        // Lấy danh sách các loại từ cơ sở dữ liệu
+        const categories = await Category.find();
 
-        newcategory.save();
-        res.json({ msg: "Bạn đã thêm thành công" })
+        // Kiểm tra loại đã tồn tại hay chưa
+        const categoryExists = categories.some(
+            (c) => c.category.toUpperCase() === name.toUpperCase().trim()
+        );
+
+        if (categoryExists) {
+            return res.status(400).json({ success: false, message: "Loại đã tồn tại." });
+        }
+
+        // Tạo một loại mới
+        const newCategory = new Category();
+        newCategory.category = name
+            .toLowerCase()
+            .replace(/^.|\s\S/g, (a) => a.toUpperCase());
+
+        await newCategory.save();
+
+        res.status(201).json({
+            success: true,
+            message: "Bạn đã thêm thành công loại mới.",
+            data: newCategory,
+        });
+    } catch (error) {
+        next(error); // Gửi lỗi sang middleware xử lý lỗi
     }
-}
+};
+
 
 module.exports.delete = async (req, res) => {
-    console.log(req.query)
-    const id = req.query.id;
+    try {
+        const { id } = req.query;
 
-    await Category.deleteOne({ _id: id }, (err) => {
-        if (err) {
-            res.json({ msg: err })
-            return;
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Thiếu ID cần xóa." });
         }
-        res.json({ msg: "Thanh Cong" })
-    })
 
-}
+        const result = await Category.deleteOne({ _id: id });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy danh mục cần xóa." });
+        }
+
+        res.json({ success: true, message: "Xóa danh mục thành công." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Lỗi server.", error: error.message });
+    }
+};
+
 
 
 module.exports.detailProduct = async (req, res) => {
-    let page = parseInt(req.query.page) || 1;
-    const keyWordSearch = req.query.search;
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const perPage = parseInt(req.query.limit) || 8;
+        const keyWordSearch = req.query.search || "";
 
-    const perPage = parseInt(req.query.limit) || 8;
+        const category = await Category.findOne({ category: req.params.id });
 
+        if (!category) {
+            return res.status(404).json({ success: false, message: "Danh mục không tồn tại." });
+        }
 
-    let start = (page - 1) * perPage;
-    let end = page * perPage;
+        const products = await Product.find({ id_category: category._id }).populate('id_category');
 
-    const category = await Category.findOne({ category: req.params.id });
+        const filteredProducts = keyWordSearch
+            ? products.filter((product) =>
+                  product.name_product.toUpperCase().includes(keyWordSearch.toUpperCase()) ||
+                  product.price_product.toString().includes(keyWordSearch)
+              )
+            : products;
 
-
-    let products = await Product.find({ id_category: category._id }).populate('id_category');
-    const totalPage = Math.ceil(products.length / perPage);
-
-    if (!keyWordSearch) {
-        res.json({
-            products: products.slice(start, end),
-            totalPage: totalPage
-        })
-
-    } else {
-        var newData = products.filter(value => {
-            return value.name_product.toUpperCase().indexOf(keyWordSearch.toUpperCase()) !== -1 ||
-                value.price_product.toUpperCase().indexOf(keyWordSearch.toUpperCase()) !== -1 ||
-                value.id.toUpperCase().indexOf(keyWordSearch.toUpperCase()) !== -1
-            // value.id_category.category.toUpperCase().indexOf(keyWordSearch.toUpperCase()) !== -1
-        })
+        const totalPage = Math.ceil(filteredProducts.length / perPage);
+        const paginatedProducts = filteredProducts.slice((page - 1) * perPage, page * perPage);
 
         res.json({
-            products: newData.slice(start, end),
-            totalPage: totalPage
-        })
+            success: true,
+            products: paginatedProducts,
+            totalPage: totalPage,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Lỗi server.", error: error.message });
     }
-}
+};
+
 
 module.exports.update = async (req, res) => {
-    const category = await Category.find();
+    try {
+        const { id, name } = req.query;
 
-    const categoryFilter = category.filter((c) => {
-        return c.category.toUpperCase() === req.query.name.toUpperCase().trim() && c.id !== req.query.id
-    });
+        if (!id || !name) {
+            return res.status(400).json({ success: false, message: "Thiếu ID hoặc tên danh mục cần cập nhật." });
+        }
 
-    if (categoryFilter.length > 0) {
-        res.json({ msg: 'Loại đã tồn tại' })
-    } else {
-        req.query.name = req.query.name.toLowerCase().replace(/^.|\s\S/g, a => { return a.toUpperCase() })
-        await Category.updateOne({ _id: req.query.id }, { category: req.query.name }, function (err, res) {
-            if (err) return res.json({ msg: err });
+        const categoryExists = await Category.findOne({
+            category: new RegExp(`^${name.trim()}$`, "i"),
+            _id: { $ne: id },
         });
-        res.json({ msg: "Bạn đã update thành công" })
+
+        if (categoryExists) {
+            return res.status(400).json({ success: false, message: "Tên danh mục đã tồn tại." });
+        }
+
+        const updatedCategory = await Category.updateOne(
+            { _id: id },
+            { category: name.toLowerCase().replace(/^.|\s\S/g, (char) => char.toUpperCase()) }
+        );
+
+        if (updatedCategory.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: "Danh mục không tồn tại." });
+        }
+
+        res.json({ success: true, message: "Cập nhật danh mục thành công." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Lỗi server.", error: error.message });
     }
-}
+};
+
 
 module.exports.detail = async (req, res) => {
-    const category = await Category.findOne({ _id: req.params.id });
+    try {
+        const { id } = req.params;
 
-    res.json(category)
-}
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Thiếu ID danh mục." });
+        }
+
+        const category = await Category.findOne({ _id: id });
+
+        if (!category) {
+            return res.status(404).json({ success: false, message: "Danh mục không tồn tại." });
+        }
+
+        res.json({ success: true, category });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Lỗi server.", error: error.message });
+    }
+};
+
 
 // module.exports.getCategoryItemCount = async (req, res) => {
 //     try {

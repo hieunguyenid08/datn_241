@@ -16,6 +16,7 @@ import { isMobile } from 'react-device-detect';
 import './styles.css';
 import SaleAPI from '../API/SaleAPI';
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode'
 
 function Header(props) {
     // State count of cart
@@ -52,8 +53,6 @@ function Header(props) {
         dispatch(action)
     }
     //Get IdUser từ redux khi user đã đăng nhập
-    var id_user = useSelector(state => state.Session.idUser)
-
     // Get carts từ redux khi user chưa đăng nhập
     // const carts = useSelector(state => state.Cart.listCart)
 
@@ -62,25 +61,26 @@ function Header(props) {
     const [user, set_user] = useState({})
 
     // Hàm này dùng để hiện thị
-    useEffect(() => {
-        if (!id_user) { // user chưa đăng nhâp
-            set_active_user(false)
-        } else { // user đã đăng nhâp
+    useEffect(() => {// user đã đăng nhâp
+        set_active_user(false)
+            const token = localStorage.getItem('jwt')
+            const decoded = jwtDecode(token);
             const fetchData = async () => {
-                const response = await User.Get_User(sessionStorage.getItem('id_user'))
+                const response = await User.Get_User(decoded.id)
                 set_user(response)
+                if(response){
+                    set_active_user(true)
+                }
             }
             fetchData()
-            set_active_user(true)
-        }
-    }, [id_user])
 
-
+    }, [])
     // Hàm này dùng để xử lý phần log out
     const handler_logout = () => {
         const action = deleteSession('')
         dispatch(action)
         sessionStorage.clear()
+        localStorage.clear('jwt')
     }
     // Get trạng thái từ redux khi user chưa đăng nhập
     const count = useSelector(state => state.Count.isLoad)
@@ -130,6 +130,7 @@ function Header(props) {
         }
         fetchData()
     }, [])
+
 
     // Hàm này trả ra list product mà khách hàng tìm kiếm
     // sử dụng useMemo để performance hơn vì nếu mà dữ liệu mới giống với dữ liệu cũ thì nó sẽ lấy cái
@@ -389,7 +390,7 @@ function Header(props) {
                                                 (
                                                     <div className="ul_setting" ref={userRef}>
                                                         <ul style={{ width: 100 }} className='dropdown' >
-                                                            <li className="li_setting"><Link to={`/profile/${sessionStorage.getItem("id_user")}`} className="li_setting">Trang cá nhân</Link></li>
+                                                            <li className="li_setting"><Link to={`/profile/${user._id}`} className="li_setting">Trang cá nhân</Link></li>
                                                             <li className="li_setting"><Link to="/history" className="li_setting">Tinh trạng đặt hàng</Link></li>
                                                             <li className="li_setting"><a onClick={handler_logout}>Đăng xuất</a></li>
                                                         </ul>

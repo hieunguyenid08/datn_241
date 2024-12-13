@@ -58,6 +58,7 @@ function SignIn(props) {
                     dispatch(action)
 
                     sessionStorage.setItem('id_user', response._id)
+                    localStorage.setItem('jwt', response.jwt)
                     
                     const action_count_change = changeCount(count_change)
                     dispatch(action_count_change)

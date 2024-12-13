@@ -4,6 +4,7 @@ import queryString from 'query-string'
 import CouponAPI from '../API/CouponAPI';
 import Pagination from '../Shop/Component/Pagination';
 import { Link } from 'react-router-dom';
+import axiosClient from '../API/axiosClient.jsx'
 
 function Event(props) {
 
@@ -18,15 +19,32 @@ function Event(props) {
 
 
     useEffect(() => {
-        const query = '?' + queryString.stringify(pagination)
-
+        const query = '?' + queryString.stringify(pagination);
         const fetchAllData = async () => {
-            const response = await CouponAPI.getCoupons(query)
-            setCoupons(response.coupons)
-            setTotalPage(response.totalPage)
-        }
-        fetchAllData()
-    }, [pagination])
+          const token = localStorage.getItem('jwt');  // Get token from localStorage
+    
+          if (!token) {
+            console.error('No JWT token found');
+            return;
+          }
+    
+          try {
+            const response = await CouponAPI.getCoupons(query, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });        // Update state with fetched data
+            setCoupons(response);
+            setTotalPage(response.totalPage);
+          } catch (error) {
+            console.error('Error fetching data:', error);
+            // Handle error (maybe show a message to the user)
+          }
+          
+        };
+    
+        fetchAllData();
+      }, [pagination]); 
 
 
     const handlerChangePage = (value) => {
@@ -35,7 +53,7 @@ function Event(props) {
             page: value
         })
     }
-
+    console.log(coupons)
     return (
         <div>
             <div className="breadcrumb-area">

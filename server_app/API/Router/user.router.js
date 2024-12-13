@@ -2,16 +2,23 @@ var express = require('express')
 
 var router = express.Router()
 
-const Users = require('../Controller/user.controller')
+const userController = require('../Controller/user.controller')
+const auth = require('../MiddleWare')
 
-router.get('/', Users.index)
+router.get('/', auth.verifyToken,userController.index)
 
-router.get('/:id', Users.user)
+router.get('/:id',auth.verifyToken,userController.user)
 
-router.put('/', Users.update_user)
+router.put('/', userController.update_user)
 
-router.get('/detail/login', Users.detail)
+router.get('/detail/login', userController.detail)
 
-router.post('/', Users.post_user)
+router.post('/', userController.post_user)
+
+// Route refresh token
+router.post('/refresh-token', auth.verifyRefreshToken, userController.refreshToken)
+
+// Route logout
+router.post('/logout', auth.verifyToken, userController.logout)
 
 module.exports = router

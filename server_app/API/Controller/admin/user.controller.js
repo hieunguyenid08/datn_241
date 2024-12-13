@@ -50,11 +50,10 @@ module.exports.create = async (req, res) => {
     } else {
         var newUser = new User()
         const salt = await bcrypt.genSalt();
-        req.query.password = await bcrypt.hash(req.query.password, salt);
+        newUser.password = await bcrypt.hash(req.query.password, salt);
         req.query.name = req.query.name.toLowerCase().replace(/^.|\s\S/g, a => { return a.toUpperCase() })
         newUser.fullname = req.query.name
         newUser.username = req.query.username
-        newUser.password = req.query.password
         if (req.query.permission) {
             newUser.id_permission = "6087dcb5f269113b3460fce4"
         } else newUser.id_permission = req.query.permission
@@ -110,24 +109,77 @@ module.exports.update = async (req, res) => {
     res.json({ msg: "Bạn đã update thành công" })
 }
 
+// Hàm login với Access Token và Refresh Token
 module.exports.login = async (req, res) => {
     try {
         const email = req.body.email;
         const password = req.body.password;
+        console.log("abc",password);
+
+        // Tìm user theo email và populate quyền
         const user = await User.findOne({ email }).populate('id_permission');
 
         if (!user) {
-            return res.json({ msg: "Không Tìm Thấy User" });
+            return res.status(404).json({ msg: "Không Tìm Thấy User" });
         }
 
-        const isPasswordValid = password == user.password;
+        // Kiểm tra mật khẩu với bcrypt
+        const isPasswordValid = await bcrypt.compare(password, user.password); // So sánh mật khẩu đã hash
 
         if (isPasswordValid) {
-            const token = jwt.sign({ id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
-            return res.json({ msg: "Đăng nhập thành công", user, jwt: token });
+            // Xóa mật khẩu trước khi trả về thông tin người dùng
+            user.password = undefined;
+
+            // Tạo Access Token với thời gian sống ngắn (1 giờ)
+            const accessToken = jwt.sign(
+                { id: user._id },
+                'your_jwt_secret',
+                { expiresIn: '1h' }
+            );
+
+            // Tạo Refresh Token với thời gian sống dài hơn (7 ngày)
+            const refreshToken = jwt.sign(
+                { id: user._id },
+                'your_refresh_jwt_secret',
+                { expiresIn: '7d' }
+            );
+
+            // Gửi token và thông tin người dùng
+            return res.json({
+                msg: "Đăng nhập thành công",
+                user,
+                accessToken,  // Trả về access token
+                refreshToken  // Trả về refresh token
+            });
         } else {
-            return res.json({ msg: "Sai mật khẩu" });
+            return res.status(401).json({ msg: "Sai mật khẩu" });
         }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Internal server error" });
+    }
+};
+
+// Hàm để tạo access token mới từ refresh token
+module.exports.refreshToken = async (req, res) => {
+    try {
+        const refreshToken = req.body.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(400).json({ msg: "Refresh Token không có" });
+        }
+
+        // Kiểm tra và giải mã refresh token
+        jwt.verify(refreshToken, 'your_refresh_jwt_secret', async (err, user) => {
+            if (err) {
+                return res.status(403).json({ msg: "Refresh Token không hợp lệ" });
+            }
+
+            // Tạo lại access token từ refresh token
+            const accessToken = jwt.sign({ id: user.id }, 'your_jwt_secret', { expiresIn: '1h' });
+
+            return res.json({ accessToken });
+        });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ msg: "Internal server error" });

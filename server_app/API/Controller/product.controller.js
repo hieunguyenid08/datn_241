@@ -13,7 +13,7 @@ module.exports.index = async (req, res) => {
 
 module.exports.gender = async (req, res) => {
 
-    const gender = req.query.gender
+    const gender = req.body.gender
 
     const category = await Category.find({ gender: gender })
 

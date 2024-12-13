@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-
+const cookieParser = require('cookie-parser');
 const cors = require("cors");
 
 // Khởi tạo paypal
@@ -44,6 +44,7 @@ mongoose.connect("mongodb+srv://huytehuy:huytehuy@cluster0.i6slrnu.mongodb.net/D
 
 app.use('/', express.static('public'))
 app.use(upload());
+app.use(cookieParser());
 
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -72,12 +73,6 @@ app.use('/api/admin/User', UserAdmin)
 app.use('/api/admin/Order', Order)
 app.use('/api/admin/Coupon', Coupon)
 app.use('/api/admin/Sale', Sale)
-
-// Middleware to parse JSON requests
-app.use(bodyParser.json());
-
-// Route to handle POST requests
-
 
 io.on("connection", (socket) => {
   console.log(`Có người vừa kết nối, socketID: ${socket.id}`);

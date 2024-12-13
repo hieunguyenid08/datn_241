@@ -73,11 +73,25 @@ module.exports.delete = async (req, res) => {
     
 }
 
-module.exports.details = async (req, res) => {
-    const product = await Product.findOne({ _id: req.params.id });
+module.exports.details = async (req, res, next) => {
+    try {
+        // Kiểm tra nếu `id` là ObjectId hợp lệ
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ success: false, message: "ID không hợp lệ." });
+        }
 
-    res.json(product)
-}
+        // Tìm sản phẩm theo ID
+        const product = await Product.findById(req.params.id);
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm." });
+        }
+
+        res.status(200).json({ success: true, data: product });
+    } catch (error) {
+        next(error); // Chuyển lỗi sang middleware xử lý lỗi
+    }
+};
 
 module.exports.update = async (req, res) => {
     console.log(req.body);
