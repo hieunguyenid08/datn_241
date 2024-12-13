@@ -62,18 +62,30 @@ function Header(props) {
 
     // Hàm này dùng để hiện thị
     useEffect(() => {// user đã đăng nhâp
-        set_active_user(false)
-            const token = localStorage.getItem('jwt')
-            const decoded = jwtDecode(token);
-            const fetchData = async () => {
-                const response = await User.Get_User(decoded.id)
-                set_user(response)
-                if(response){
-                    set_active_user(true)
-                }
-            }
-            fetchData()
+        let mounted = true;
 
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem('jwt')
+                const decoded = jwtDecode(token);
+                const response = await User.Get_User(decoded.id)
+                if (mounted) {
+                    set_user(response)
+                    if(response){
+                        set_active_user(true)
+                    }
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        fetchData()
+
+        // Cleanup function
+        return () => {
+            mounted = false;
+        }
     }, [])
     // Hàm này dùng để xử lý phần log out
     const handler_logout = () => {
