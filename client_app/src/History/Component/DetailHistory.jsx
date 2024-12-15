@@ -8,6 +8,13 @@ import Detail_OrderAPI from '../../API/Detail_OrderAPI';
 import NoteAPI from '../../API/NoteAPI';
 
 
+
+import queryString from 'query-string'
+
+
+
+
+
 function DetailHistory(props) {
 
     const { id } = useParams()
@@ -17,7 +24,7 @@ function DetailHistory(props) {
     const [detail_order, set_detail_order] = useState([])
 
     const [note, set_note] = useState({})
-    const baseURL = 'https://huytehuy.online';
+    const baseURL = 'http://localhost:3000/';
 
     useEffect(() => {
 
@@ -38,6 +45,45 @@ function DetailHistory(props) {
 
     }, [])
 
+    const handleConfirm = async (id) => {
+
+
+
+        const params = {
+            id: id
+        }
+
+        const query = '?' + queryString.stringify(params)
+
+        const response = await OrderAPI.delivery(query)
+
+        console.log(response)
+        if (response.msg === "Thanh Cong") {
+            window.location.reload();
+        }
+
+
+    }
+    const handleReturnConfirm = async (id) => {
+
+
+
+        const params = {
+            id: id
+        }
+
+        const query = '?' + queryString.stringify(params)
+
+        const response = await OrderAPI.confirmreturn(query)
+
+        console.log(response)
+        if (response.msg === "Thanh Cong") {
+            window.location.reload();
+        }
+
+
+    }
+
     return (
         <div>
             <div className="container" style={{ paddingTop: '3rem' }}>
@@ -46,8 +92,8 @@ function DetailHistory(props) {
                     <li style={{ fontSize: '1.1rem' }}>ID Invoice: <span>{order._id}</span></li>
                     <li style={{ fontSize: '1.1rem' }}>Phone: <span>{order.id_note && order.id_note.phone}</span></li>
                     <li style={{ fontSize: '1.1rem' }}>Fullname: <span>{order.id_note && order.id_note.fullname}</span></li>
-                    <li style={{ fontSize: '1.1rem' }}>Total: <span>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(order.total) + ' VNĐ'}</span></li>
-                    <li style={{ fontSize: '1.1rem' }}>Feeship: <span>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(order.feeship) + ' VNĐ'}</span></li>
+                    <li style={{ fontSize: '1.1rem' }}>Total: <span>{new Intl.NumberFormat('vi-VN', { style: 'decimal', decimal: 'VND' }).format(order.total) + ' VNĐ'}</span></li>
+                    <li style={{ fontSize: '1.1rem' }}>Feeship: <span>{new Intl.NumberFormat('vi-VN', { style: 'decimal', decimal: 'VND' }).format(order.feeship) + ' VNĐ'}</span></li>
                     <li style={{ fontSize: '1.1rem' }}>Payment: <span>{order.id_payment && order.id_payment.pay_name}</span></li>
                 </ul>
                 <div className="group_box_status" style={{ marginTop: '3rem' }}>
@@ -101,6 +147,7 @@ function DetailHistory(props) {
                                                 <th className="li-product-thumbnail">Name Product</th>
                                                 <th className="cart-product-name">Price</th>
                                                 <th className="li-product-price">Count</th>
+                                                <th className="li-product-price">Process</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -109,13 +156,35 @@ function DetailHistory(props) {
                                                     <tr key={value._id}>
                                                         <td className="li-product-thumbnail"><img src={value.id_product.image} style={{ width: '5rem' }} alt="Li's Product Image" /></td>
                                                         <td className="li-product-name"><a href={`${baseURL}/detail/${value.id_product._id}`}>{value.name_product}</a></td>
-                                                        <td className="li-product-price"><span className="amount">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(value.price_product) + ' VNĐ'}</span></td>
+                                                        <td className="li-product-price"><span className="amount">{new Intl.NumberFormat('vi-VN', { style: 'decimal', decimal: 'VND' }).format(value.price_product) + ' VNĐ'}</span></td>
                                                         <td className="li-product-price"><span className="amount">{value.count}</span></td>
+                                                        <td>
+                                                            {(() => {
+                                                                switch (order.status) {
+                                                                    case "1": return "Đơn hàng đang duyệt";
+                                                                    case "2": return <>
+
+                                                                        <button onClick={() => handleConfirm(order._id)} className="btn btn-success">Đã nhận được hàng</button>
+                                                                    </>
+                                                                    case "3": return <span style={{ color: 'green' }}>Đã nhận hàng thành công</span>;
+                                                                    case "4": return <>
+
+                                                                        <button onClick={() => handleReturnConfirm(order._id)} className="btn btn-success">Trả hàng</button>
+                                                                    </>
+                                                                    case "5": return "Đơn bị hủy";
+                                                                    case "6": return "Đã nhận yêu cầu trả hàng";
+
+                                                                    default: return <span style={{ color: 'green' }}>Trả hàng thành công</span>;
+                                                                }
+                                                            })()}
+                                                        </td>
+
                                                     </tr>
                                                 ))
                                             }
 
                                         </tbody>
+
                                     </table>
                                 </div>
                             </form>

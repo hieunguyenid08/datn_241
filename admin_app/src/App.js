@@ -50,7 +50,8 @@ import UpdateCoupon from './component/Conpon/UpdateCoupon';
 import Sale from './component/Sale/Sale';
 import CreateSale from './component/Sale/CreateSale';
 import UpdateSale from './component/Sale/UpdateSale';
-
+import returnOrder from './component/Order/ReturnOder'
+import confirmreturnOrder from './component/Order/ConfirmReturnOder'
 function App() {
   const Home = lazy(() => {
     return new Promise((resolve) => {
@@ -101,7 +102,9 @@ function App() {
             <Route exact path='/order' component={Order} />
             <Route path='/order/detail/:id' component={DetailOrder} />
             <Route path='/confirmorder' component={ConfirmOrder} />
+            <Route path='/returnoder' component={returnOrder} />
             <Route path='/delivery' component={Delivery} />
+            <Route path='/confirmreturnoder' component={confirmreturnOrder} />
             <Route path='/confirmdelivery' component={ConfirmDelivery} />
             <Route path='/completedorder' component={CompletedOrder} />
             <Route path='/cancelorder' component={CancelOrder} />

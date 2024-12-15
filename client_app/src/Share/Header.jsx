@@ -93,6 +93,7 @@ function Header(props) {
         dispatch(action)
         sessionStorage.clear()
         localStorage.clear('jwt')
+        window.location.reload()
     }
     // Get trạng thái từ redux khi user chưa đăng nhập
     const count = useSelector(state => state.Count.isLoad)

@@ -60,7 +60,15 @@ function Menu() {
         {
             item: "Permission",
             permission: "Admin"
-        }
+        },
+        {
+            item: "ConfirmReturnOder",
+            permission: "Nhân Viên"
+        },
+        {
+            item: "ReturnOder",
+            permission: "Nhân Viên"
+        },
         // "Category", ,
         // "Permission",
         // "User",

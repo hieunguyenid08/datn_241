@@ -103,7 +103,18 @@ module.exports.cancelOrder = async (req, res) => {
     });
     res.json({ msg: "Thanh Cong" })
 }
-
+module.exports.confirmReturnOrder = async (req, res) => {
+    await Order.updateOne({ _id: req.query.id }, { status: "7" }, function (err, res) {
+        if (err) return res.json({ msg: err });
+    });
+    res.json({ msg: "Thanh Cong" })
+}
+module.exports.returnOrder = async (req, res) => {
+    await Order.updateOne({ _id: req.query.id }, { status: "6" }, function (err, res) {
+        if (err) return res.json({ msg: err });
+    });
+    res.json({ msg: "Thanh Cong" })
+}
 
 module.exports.completeOrder = async (req, res) => {
 

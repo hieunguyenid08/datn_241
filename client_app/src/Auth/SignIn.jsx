@@ -65,6 +65,8 @@ function SignIn(props) {
 
                     set_redirect(true)
 
+                    window.location.reload()
+
                 }
             }
 

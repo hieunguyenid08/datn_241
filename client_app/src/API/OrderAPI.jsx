@@ -1,3 +1,4 @@
+
 import axiosClient from './axiosClient'
 
 const OrderAPI = {
@@ -25,7 +26,16 @@ const OrderAPI = {
     cancel_order: (query) => {
         const url = `/api/admin/Order/cancelorder${query}`
         return axiosClient.patch(url)
+    },
+    delivery: (query) => {
+        const url = `/api/admin/Order/delivery${query}`
+        return axiosClient.patch(url)
+    },
+    confirmreturn: (query) => {
+        const url = `/api/admin/Order/returnorder${query}`
+        return axiosClient.patch(url)
     }
+
 
 }
 
